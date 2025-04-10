@@ -5,9 +5,9 @@
 const char WIFI_SSID[] = ""; //fill with your wifi ssid
 const char WIFI_PASSWORD[] = ""; //fill with your wifi passowrd
 
-#define THINGNAME ""; //fill with thing name
+#define THINGNAME "" //fill with thing name
 
-int8_t TIME_ZONE = 0 
+int8_t TIME_ZONE = 0;
 
 const char MQTT_HOST = ""; // fill with your MQTT HOST URL (Connect > Domain Configurations > Domain Name)
 
