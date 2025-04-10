@@ -52,7 +52,3 @@ This repository contains a simple script for the **ESP-8266 NodeMCU** that reads
 3. The script then reads temperature and humidity data from the DHT11 sensor.
 4. The data (along with a timestamp) is formatted as a JSON message and published to the specified MQTT topic on AWS IoT.
 5. If the connection to AWS IoT is lost, the script will attempt to reconnect.
-
-## Future Enhancements
-
-This is a starting point for building various IoT solutions with ESP8266.
