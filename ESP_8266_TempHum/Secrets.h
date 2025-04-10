@@ -9,7 +9,7 @@ const char WIFI_PASSWORD[] = ""; //fill with your wifi passowrd
 
 int8_t TIME_ZONE = 0;
 
-const char MQTT_HOST = ""; // fill with your MQTT HOST URL (Connect > Domain Configurations > Domain Name)
+const char* MQTT_HOST = ""; // fill with your MQTT HOST URL (Connect > Domain Configurations > Domain Name)
 
 // root_ca.pem here VVV
 static const char root_ca[] PROGMEM = R"EOF(
