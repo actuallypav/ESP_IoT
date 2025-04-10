@@ -5,7 +5,7 @@
 #include <time.h>
 #include "secrets.h"
 #include "DHT.h"
-#define TIME_ZONE 1
+#define TIME_ZONE 0
 
 #define DHTPIN 4 //Digital pin
 #define DHTTYPE DHT11 //DHT 11
@@ -18,24 +18,23 @@ unsigned long lastMillis = 0;
 unsigned long previousMills = 0;
 const long interval = 5000;
 
-#define AWS_IOT_PUBLISH_TOPIC "" //fill this with the topic
-#define AWS_IOT_SUBSCRIBE_TOPIC "" //fill this too
+#define AWS_IOT_PUBLISH_TOPIC "Temp" //fill this with the topic
 
 WiFiClientSecure net;
 
-BearSSL::X509List cert(root_ca)
-BearSSL::X509List client_cer(client_cert);
+BearSSL::X509List cert(root_ca);
+BearSSL::X509List client_crt(client_cert);
 BearSSL::PrivateKey key(privkey);
 
 PubSubClient client(net);
 
 time_t now;
-time_t nowish 1150416000;
+time_t nowish = 1150416000;
 
 void NTPConnect(void) {
   Serial.print("Setting time using SNTP");
   configTime(TIME_ZONE * 3600, 0, "time.google.com", "time.cloudflare.com");
-  now = time(nullptr)l;
+  now = time(nullptr);
   while (now < nowish)
   {
     delay(500);
@@ -52,7 +51,7 @@ void NTPConnect(void) {
 void connectAWS() {
   delay(3000);
   WiFi.mode(WIFI_STA);
-  WiFi.begin(WIDI_SSID, WIFI_PASSWORD);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   Serial.println(String("Attempting to connect to SSID: ") + String(WIFI_SSID));
 
@@ -68,7 +67,6 @@ void connectAWS() {
   net.setClientRSACert(&client_crt, &key);
 
   client.setServer(MQTT_HOST, 8883);
-  client.setCallback(messageReceived);
 
   Serial.println("Connecting to AWS IoT");
 
@@ -88,13 +86,20 @@ void connectAWS() {
 
 void publishMessage() {
   StaticJsonDocument<200> doc;
-  doc["time"] = millis();
+  doc["time"] = now;
   doc["humidity"] = h;
   doc["temperature"] = t;
+
   char jsonBuffer[512];
   serializeJson(doc, jsonBuffer);
 
-  client.publish(AWS_IOT_PUBLISH_TOPIC, jsonBuffer);
+  Serial.print("Publishing to topic: ");
+  Serial.println(AWS_IOT_PUBLISH_TOPIC);
+  Serial.print("Message: ");
+  Serial.println(jsonBuffer);
+
+  if (!client.publish(AWS_IOT_PUBLISH_TOPIC, jsonBuffer)) {
+    Serial.println("Publish failed!");
 }
 
 void setup() {
@@ -129,7 +134,7 @@ void loop() {
   else
   {
     client.loop();
-    if (millis() - lastMillis > 5000)
+    if (millis() - lastMillis > 300000) // send a message every 5 mins
     {
       lastMillis = millis();
       publishMessage();
