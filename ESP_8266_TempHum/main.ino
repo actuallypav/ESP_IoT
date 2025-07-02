@@ -6,6 +6,8 @@
 #include "secrets.h"
 #include "DHT.h"
 #define TIME_ZONE 0
+#define LED_PIN LED_BUILTIN
+
 
 #define DHTPIN 4 //Digital pin
 #define DHTTYPE DHT11 //DHT 11
@@ -15,7 +17,6 @@ DHT dht(DHTPIN, DHTTYPE);
 float h ;
 float t;
 unsigned long lastMillis = 0;
-unsigned long previousMills = 0;
 const long interval = 5000;
 
 #define AWS_IOT_PUBLISH_TOPIC "Temp" //fill this with the topic
@@ -52,12 +53,16 @@ void connectAWS() {
   delay(3000);
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  delay(100);
 
   Serial.println(String("Attempting to connect to SSID: ") + String(WIFI_SSID));
 
   while (WiFi.status() != WL_CONNECTED)
   {
-    Serial.print(".");
+    Serial.println("");
+    Serial.println("WiFi connected");
+    Serial.print("IP address: ");
+    Serial.println(WiFi.localIP());
     delay(1000);
   }
 
@@ -72,7 +77,8 @@ void connectAWS() {
 
   while (!client.connect(THINGNAME))
   {
-    Serial.print(".");
+    //error to explain why im not connecting
+    Serial.println("Connect failed, state: " + String(client.state()));
     delay(1000);
   }
 
@@ -86,6 +92,7 @@ void connectAWS() {
 
 void publishMessage() {
   StaticJsonDocument<200> doc;
+  doc["thingname"] = THINGNAME;
   doc["time"] = now;
   doc["humidity"] = h;
   doc["temperature"] = t;
@@ -100,17 +107,23 @@ void publishMessage() {
 
   if (!client.publish(AWS_IOT_PUBLISH_TOPIC, jsonBuffer)) {
     Serial.println("Publish failed!");
+  }
 }
 
 void setup() {
   Serial.begin(115200);
   connectAWS();
   dht.begin();
+  pinMode(LED_PIN, OUTPUT);
 }
 
 void loop() {
   h = dht.readHumidity();
   t = dht.readTemperature();
+  digitalWrite(LED_PIN, LOW);
+  delay(100);               
+  digitalWrite(LED_PIN, HIGH);
+
 
   if (isnan(h) || isnan(t)) //Check if read failed and exit early TODO change to report in IoT and alarm?
   {
