@@ -1,7 +1,5 @@
 #include <pgmspace.h>
 
-#define SECRET
-
 const char WIFI_SSID[] = ""; //fill with your wifi ssid
 const char WIFI_PASSWORD[] = ""; //fill with your wifi passowrd
 
